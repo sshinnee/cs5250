@@ -44,7 +44,13 @@ ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 {
 	copy_to_user(buf, onebyte_data, 1);
 	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data);
-	return count;
+	if (*f_pos == 0) 
+	{
+		*f_pos+=1;
+		return 1;
+	} else {
+		return 0;	
+	}
 }
 
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos)
@@ -53,7 +59,7 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
 	tmp=buf+count-1;
 	copy_from_user(onebyte_data, tmp, 1);
 	printk(KERN_ALERT "this is our onebyte data inside write:%c\n", onebyte_data); 
-	return count;
+	return 1;
 }
 
 static int onebyte_init(void)
@@ -75,7 +81,6 @@ static int onebyte_init(void)
 		// return no memory error, negative signify a failure
 		return -ENOMEM;
 	}
-	//memset(onebyte_data, 0, 1);
 	// initialize the value to be X
 	*onebyte_data = 'X';
 	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data);
