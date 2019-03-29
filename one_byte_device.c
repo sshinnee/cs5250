@@ -27,6 +27,8 @@ struct file_operations onebyte_fops = {
 };
 
 char *onebyte_data = NULL;
+short readPos = 0;
+
 
 int onebyte_open(struct inode *inode, struct file *filep)
 {
@@ -41,26 +43,42 @@ int onebyte_release(struct inode *inode, struct file *filep)
 ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 {
 	/*please complete the function on your own*/
-	int error_count = 0;
-	error_count = raw_copy_to_user(buf, onebyte_data, 1);
+	//int error_count = 0;
+	//error_count = raw_copy_to_user(buf, onebyte_data, 1);
 
-	if (error_count == 0) {
-		printk(KERN_INFO "onebyte read success\n");
-	} else {
-		printk(KERN_INFO "onebyte read failed: %d\n", error_count);
-		return -EFAULT;
+	//if (error_count == 0) {
+	//	printk(KERN_INFO "onebyte read success\n");
+	//} else {
+	//	printk(KERN_INFO "onebyte read failed: %d\n", error_count);
+	//	return -EFAULT;
+	//}
+	short count_local = 0;
+	while (count && (onebyte_data[readPos]!=0))
+	{
+		put_user(onebyte_data[readPos], buf++); //copy byte from kernel space to user space
+		count_local++;
+		count--;
+		readPos++;
 	}
-
 	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data);
-	return 0;
+	return count;
 }
 
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos)
 {
 	/*please complete the function on your own*/
-	raw_copy_from_user(onebyte_data, buf, 1);
+	//raw_copy_from_user(onebyte_data, buf, 1);
+	short ind = count - 1;
+	short count_local = 0;
+	memset(onebyte_data, 0, 1);
+	readPos = 0;
+	while(count > 0)
+	{
+		onebyte_data[count_local++] = buf[ind--];
+		count--;
+	}
 	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data); 
-	return 0;
+	return count;
 }
 
 static int onebyte_init(void)
