@@ -41,14 +41,25 @@ int onebyte_release(struct inode *inode, struct file *filep)
 ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 {
 	/*please complete the function on your own*/
-	raw_copy_to_user(buf, onebyte_data, 1);
+	int error_count = 0;
+	error_count = raw_copy_to_user(buf, onebyte_data, 1);
+
+	if (error_count == 0) {
+		printk(KERN_INFO "onebyte read success\n");
+	} else {
+		printk(KERN_INFO "onebyte read failed: %d\n", error_count);
+		return -EFAULT;
+	}
+
+	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data);
 	return 0;
 }
 
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos)
 {
 	/*please complete the function on your own*/
-	raw_copy_from_user(onebyte_data, buf, 1); 
+	raw_copy_from_user(onebyte_data, buf, 1);
+	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data); 
 	return 0;
 }
 
@@ -73,10 +84,11 @@ static int onebyte_init(void)
 	}
 	// initialize the value to be X
 	*onebyte_data = 'X';
+	printk(KERN_ALERT "this is our onebyte data:%c\n", onebyte_data);
 	printk(KERN_ALERT "This is a onebyte device module\n");
 
 	// register the device class
-	onebyte_class = class_create(
+//	onebyte_class = class_create(
 	return 0;
 	
 }
